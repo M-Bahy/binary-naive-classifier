@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 
-mode = 1
+mode = 3
 images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/bahy/{mode}_images"
 labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/bahy/labels"
 
@@ -46,9 +46,31 @@ def train_test_split(images_directory, labels_directory, train_size = 0.8):
     x_test, y_test = images[train_size:], labels[train_size:]
     return process_images(x_train), process_labels(y_train), process_images(x_test), process_labels(y_test)
 
+def BayesModel(data,truth):
+    model = {}
+    # count the number of zeros and 255s in the truth
+    truth = truth.flatten()
+    count = np.bincount(truth)
+    zeros = count[0]
+    ones = count[255]
+    model["P(0)"] = zeros / len(truth)
+    model["P(1)"] = ones / len(truth)
+    # for each class calculate the mean and std of each feature (pixel) (can be rgb or grayscale)
+    print(model)
+    print(data[0])
+    
+    
+
+def BayesPredict(model,test_data):
+    pass
+
+def ConfMtrx(actual,predicted):
+    pass
+
 if __name__ == "__main__":
     if mode not in [1, 3, 204]:
         raise ValueError("Mode should be 1,3 or 204")
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
-    print(f"Training x set shape: {len(x_train)} {len(x_train[0])}")
-    print(f"Training y set shape: {len(y_train)} {len(y_train[0])}")
+    BM = BayesModel(x_train, y_train)
+    lbl = BayesPredict(BM, x_test)
+    Mtrx = ConfMtrx(y_test, lbl)

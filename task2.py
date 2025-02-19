@@ -5,8 +5,8 @@ import numpy as np
 
 
 mode = 3
-images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/bahy/{mode}_images"
-labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/bahy/labels"
+images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/{mode}_images"
+labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
 
 
 def process_images(image_files):
@@ -55,6 +55,40 @@ def BayesModel(data,truth):
     ones = count[255]
     model["P(0)"] = zeros / len(truth)
     model["P(1)"] = ones / len(truth)
+
+    grayscale = []
+    red = []
+    green = []
+    blue = []
+
+    for i in range(len(data)):
+        sample_point = data[i]
+        point_class = truth[i]
+        number_of_channels = len(sample_point)
+        if number_of_channels == 1:
+            grayscale.append(sample_point)
+        elif number_of_channels == 3:
+            red.append(sample_point[0])
+            green.append(sample_point[1])
+            blue.append(sample_point[2])
+    if number_of_channels == 1:
+        # calculate the mean and variance for grayscale samples , this is an array of n numbers
+        grayscale = np.vstack(grayscale)
+        model["mean_gray"] = np.mean(grayscale, axis=0)
+        model["std_gray"] = np.var(grayscale, axis=0)
+    elif number_of_channels == 3:
+        red = np.vstack(red)
+        green = np.vstack(green)
+        blue = np.vstack(blue)
+        model["mean_red"] = np.mean(red, axis=0)
+        model["std_red"] = np.var(red, axis=0)
+        model["mean_green"] = np.mean(green, axis=0)
+        model["std_green"] = np.var(green, axis=0)
+        model["mean_blue"] = np.mean(blue, axis=0)
+        model["std_blue"] = np.var(blue, axis=0)
+    return model
+
+        
     
     
     
@@ -70,5 +104,6 @@ if __name__ == "__main__":
         raise ValueError("Mode should be 1,3 or 204")
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
     BM = BayesModel(x_train, y_train)
-    lbl = BayesPredict(BM, x_test)
-    Mtrx = ConfMtrx(y_test, lbl)
+    print(BM)
+    # lbl = BayesPredict(BM, x_test)
+    # Mtrx = ConfMtrx(y_test, lbl)

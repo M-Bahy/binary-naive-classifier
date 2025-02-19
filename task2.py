@@ -55,9 +55,7 @@ def BayesModel(data,truth):
     ones = count[255]
     model["P(0)"] = zeros / len(truth)
     model["P(1)"] = ones / len(truth)
-    # for each class calculate the mean and std of each feature (pixel) (can be rgb or grayscale)
-    print(model)
-    print(data[0])
+    
     
     
 

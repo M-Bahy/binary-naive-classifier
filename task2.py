@@ -46,11 +46,50 @@ def train_test_split(images_directory, labels_directory, train_size = 0.8):
     x_test, y_test = images[train_size:], labels[train_size:]
     return process_images(x_train), process_labels(y_train), process_images(x_test), process_labels(y_test)
 
+def count_values(array):
+    # Count occurrences of each value
+    max_value = max(array)
+    counts = [0] * (max_value + 1)
+    for value in array:
+        counts[value] += 1
+    return counts
+
+def stats(values):
+    """
+    Calculate mean and standard deviation without using numpy methods
+    Args:
+        values: Array of values (either scalars or 1D arrays)
+    Returns:
+        tuple: (mean, std)
+    """
+    # Calculate mean
+    sum_values = 0
+    n = len(values)
+    for value in values:
+            sum_values += value
+    mean = sum_values / n
+    
+    # Calculate variance
+    sum_squared_diff = 0
+    for value in values:
+        # Check if value is array or scalar
+        if isinstance(value, (list, np.ndarray)):
+            diff = value[0] - mean
+        else:
+            diff = value - mean
+        sum_squared_diff += diff * diff
+    variance = sum_squared_diff / n
+    
+    # Calculate standard deviation
+    std = (variance) ** 0.5
+    
+    return mean, std
+
 def BayesModel(data,truth):
     model = {}
     # count the number of zeros and 255s in the truth
     truth = truth.flatten()
-    count = np.bincount(truth)
+    count = count_values(truth)
     zeros = count[0]
     ones = count[255]
     model["P(0)"] = zeros / len(truth)
@@ -66,26 +105,29 @@ def BayesModel(data,truth):
         point_class = truth[i]
         number_of_channels = len(sample_point)
         if number_of_channels == 1:
-            grayscale.append(sample_point)
+            grayscale.append(sample_point[0])
         elif number_of_channels == 3:
             red.append(sample_point[0])
             green.append(sample_point[1])
             blue.append(sample_point[2])
     if number_of_channels == 1:
         # calculate the mean and variance for grayscale samples , this is an array of n numbers
-        grayscale = np.vstack(grayscale)
-        model["mean_gray"] = np.mean(grayscale, axis=0)
-        model["std_gray"] = np.var(grayscale, axis=0)
+        grayscale_mean, grayscale_std = stats(grayscale)
+        model["mean_grayscale"] = grayscale_mean
+        model["std_grayscale"] = grayscale_std
     elif number_of_channels == 3:
-        red = np.vstack(red)
-        green = np.vstack(green)
-        blue = np.vstack(blue)
-        model["mean_red"] = np.mean(red, axis=0)
-        model["std_red"] = np.var(red, axis=0)
-        model["mean_green"] = np.mean(green, axis=0)
-        model["std_green"] = np.var(green, axis=0)
-        model["mean_blue"] = np.mean(blue, axis=0)
-        model["std_blue"] = np.var(blue, axis=0)
+        # calculate the mean and variance for red samples , this is an array of n numbers
+        red_mean, red_std = stats(red)
+        model["mean_red"] = red_mean
+        model["std_red"] = red_std
+        # calculate the mean and variance for green samples , this is an array of n numbers
+        green_mean, green_std = stats(green)
+        model["mean_green"] = green_mean
+        model["std_green"] = green_std
+        # calculate the mean and variance for blue samples , this is an array of n numbers
+        blue_mean, blue_std = stats(blue)
+        model["mean_blue"] = blue_mean
+        model["std_blue"] = blue_std
     return model
 
         

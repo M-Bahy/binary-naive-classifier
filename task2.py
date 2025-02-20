@@ -29,7 +29,10 @@ def process_labels(label_files):
         with open(path, 'r') as file:
             labels = np.array([int(value) for line in file for value in line.split()])
             all_labels.append(labels)
-    return np.hstack(all_labels).reshape(-1, 1)
+    labels = np.hstack(all_labels).reshape(-1, 1)
+    labels.flatten()
+    labels = np.where(labels == 255, 1, labels)
+    return labels
 
 
 def train_test_split(images_directory, labels_directory, train_size = 0.8):
@@ -88,9 +91,9 @@ def BayesModel(data, truth):
     truth = truth.flatten()
     count = count_values(truth)
     zeros = count[0]
-    print ("Actual count of 0s: ", zeros)
-    ones = count[255]
-    print ("Actual count of 255s: ", ones)
+    # print ("Actual count of 0s: ", zeros)
+    ones = count[1]
+    # print ("Actual count of 255s: ", ones)
     model["P(0)"] = zeros / len(truth)
     model["P(1)"] = ones / len(truth)
 

@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-mode = 1
+mode = 36
 test_image = ""
 rgb_images = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/3_images"
 grayscale_images = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/1_images"
@@ -133,7 +133,15 @@ def stats(values):
     
     return mean, variance
 
+def BM_multi_spectral(data, truth):
+    pass
+
 def BayesModel(data, truth):
+    
+    if (len(data[0]) == 36):
+        # Multi-spectral image
+        return BM_multi_spectral(data, truth)
+
     model = {}
     # count the number of zeros and 255s in the truth
     truth = truth.flatten()
@@ -375,7 +383,7 @@ if __name__ == "__main__":
         raise ValueError("Mode should be 1,3 or 36")
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
     BM = BayesModel(x_train, y_train)
-    print(BM)
-    lbl = BayesPredict(BM, x_test)
-    Mtrx = ConfMtrx(y_test, lbl)
-    visualize(BM)
+    # print(BM)
+    # lbl = BayesPredict(BM, x_test)
+    # Mtrx = ConfMtrx(y_test, lbl)
+    # visualize(BM)

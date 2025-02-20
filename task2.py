@@ -212,6 +212,7 @@ def ConfMtrx(actual, predicted):
     
     # Flatten actual array if it's 2D
     actual = actual.flatten()
+    actual = np.where(actual == 255, 1, actual)
     
     # Fill confusion matrix
     for i in range(len(actual)):

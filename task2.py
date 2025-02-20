@@ -134,10 +134,51 @@ def stats(values):
     return mean, variance
 
 def BM_multi_spectral(data, truth):
-    pass
+    """
+    Multi-spectral version of BayesModel for 36-channel data with 6 classes
+    Args:
+        data: Array of arrays, each sub-array has length 36 (spectral channels)
+        truth: Array of class labels (1-7, excluding 6)
+    Returns:
+        model: Dictionary containing class probabilities and channel statistics
+    """
+    model = {}
+    
+    # Count occurrences of each class
+    truth = truth.flatten()
+    unique_classes = np.unique(truth)
+    class_counts = {cls: np.sum(truth == cls) for cls in unique_classes}
+    total_samples = len(truth)
+    
+    # Calculate prior probabilities P(class)
+    for cls in unique_classes:
+        model[f"P({cls})"] = class_counts[cls] / total_samples
+    
+    # Initialize lists to store channel values for each class
+    class_channels = {cls: [[] for _ in range(36)] for cls in unique_classes}
+    
+    # Separate data by class and channel
+    for i in range(len(data)):
+        sample_point = data[i]
+        point_class = truth[i]
+        
+        # Store each channel value in corresponding class list
+        for channel in range(36):
+            class_channels[point_class][channel].append(sample_point[channel])
+    
+    # Calculate mean and variance for each channel in each class
+    for cls in unique_classes:
+        for channel in range(36):
+            channel_values = class_channels[cls][channel]
+            mean, variance = stats(channel_values)
+            
+            model[f"mean_{cls}_channel_{channel}"] = mean
+            model[f"variance_{cls}_channel_{channel}"] = variance
+    
+    return model
 
 def BayesModel(data, truth):
-    
+
     if (len(data[0]) == 36):
         # Multi-spectral image
         return BM_multi_spectral(data, truth)

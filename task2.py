@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 
-mode = 1
+mode = 3
 images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/{mode}_images"
 labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
 
@@ -21,7 +21,6 @@ def process_images(image_files):
         all_pixels.append(pixels)
     return np.vstack(all_pixels)
 
-
 def process_labels(label_files):
     all_labels = []
     for label_file in label_files:
@@ -33,7 +32,6 @@ def process_labels(label_files):
     labels.flatten()
     labels = np.where(labels == 255, 1, labels)
     return labels
-
 
 def train_test_split(images_directory, labels_directory, train_size = 0.8):
     images = [f for f in os.listdir(images_directory) if os.path.isfile(os.path.join(images_directory, f))]
@@ -159,11 +157,6 @@ def BayesModel(data, truth):
         model["variance_1_blue"] = blue_var_1
 
     return model
-
-        
-    
-    
-    
 
 def BayesPredict(model, test_data):
     lbl = []

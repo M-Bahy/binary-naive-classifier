@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 
-mode = 3
+mode = 1
 images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/{mode}_images"
 labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
 
@@ -88,7 +88,9 @@ def BayesModel(data, truth):
     truth = truth.flatten()
     count = count_values(truth)
     zeros = count[0]
+    print ("Actual count of 0s: ", zeros)
     ones = count[255]
+    print ("Actual count of 255s: ", ones)
     model["P(0)"] = zeros / len(truth)
     model["P(1)"] = ones / len(truth)
 
@@ -201,10 +203,50 @@ def BayesPredict(model, test_data):
             lbl.append(0 if class_0_prediction > class_1_prediction else 1)
     return lbl
 
-def ConfMtrx(actual,predicted):
-    print("Confusion Matrix")
-    # print the length of the actual and predicted values
-    print(len(actual), len(predicted))
+def ConfMtrx(actual, predicted):
+    # Initialize confusion matrix
+    # [TN FP]
+    # [FN TP]
+    confusion_matrix = [[0, 0], 
+                       [0, 0]]
+    
+    # Flatten actual array if it's 2D
+    actual = actual.flatten()
+    
+    # Fill confusion matrix
+    for i in range(len(actual)):
+        if actual[i] == 0 and predicted[i] == 0:
+            confusion_matrix[0][0] += 1  # True Negative
+        elif actual[i] == 0 and predicted[i] == 1:
+            confusion_matrix[0][1] += 1  # False Positive
+        elif actual[i] == 1 and predicted[i] == 0:
+            confusion_matrix[1][0] += 1  # False Negative
+        else:
+            confusion_matrix[1][1] += 1  # True Positive
+    
+    # Calculate metrics
+    tn, fp = confusion_matrix[0]
+    fn, tp = confusion_matrix[1]
+    
+    # Avoid division by zero
+    accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) > 0 else 0
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    
+    # Print results
+    print("\nConfusion Matrix:")
+    print("-" * 21)
+    print(f"|    TN: {tn:<8} FP: {fp:<8}|")
+    print(f"|    FN: {fn:<8} TP: {tp:<8}|")
+    print("-" * 21)
+    print("\nMetrics:")
+    print(f"Accuracy:  {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall:    {recall:.4f}")
+    print(f"F1 Score:  {f1_score:.4f}")
+    
+    return confusion_matrix
 
 if __name__ == "__main__":
     if mode not in [1, 3, 204]:

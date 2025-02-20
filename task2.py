@@ -424,7 +424,7 @@ if __name__ == "__main__":
         raise ValueError("Mode should be 1,3 or 36")
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
     BM = BayesModel(x_train, y_train)
-    # print(BM)
+    print(BM)
     # lbl = BayesPredict(BM, x_test)
     # Mtrx = ConfMtrx(y_test, lbl)
     # visualize(BM)

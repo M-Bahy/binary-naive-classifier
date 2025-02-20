@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 
-mode = 3
+mode = 1
 images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/{mode}_images"
 labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
 
@@ -66,24 +66,21 @@ def stats(values):
     sum_values = 0
     n = len(values)
     for value in values:
-            sum_values += value
+        sum_values += value
     mean = sum_values / n
     
     # Calculate variance
     sum_squared_diff = 0
     for value in values:
         # Check if value is array or scalar
-        if isinstance(value, (list, np.ndarray)):
-            diff = value[0] - mean
-        else:
-            diff = value - mean
+        diff = value - mean
         sum_squared_diff += diff * diff
     variance = sum_squared_diff / n
     
-    # Calculate standard deviation
-    std = (variance) ** 0.5
+    # # Calculate standard deviation
+    # std = (variance) ** 0.5
     
-    return mean, std
+    return mean, variance
 
 def BayesModel(data,truth):
     model = {}
@@ -114,20 +111,20 @@ def BayesModel(data,truth):
         # calculate the mean and variance for grayscale samples , this is an array of n numbers
         grayscale_mean, grayscale_std = stats(grayscale)
         model["mean_grayscale"] = grayscale_mean
-        model["std_grayscale"] = grayscale_std
+        model["variance_grayscale"] = grayscale_std
     elif number_of_channels == 3:
         # calculate the mean and variance for red samples , this is an array of n numbers
         red_mean, red_std = stats(red)
         model["mean_red"] = red_mean
-        model["std_red"] = red_std
+        model["variance_red"] = red_std
         # calculate the mean and variance for green samples , this is an array of n numbers
         green_mean, green_std = stats(green)
         model["mean_green"] = green_mean
-        model["std_green"] = green_std
+        model["variance_green"] = green_std
         # calculate the mean and variance for blue samples , this is an array of n numbers
         blue_mean, blue_std = stats(blue)
         model["mean_blue"] = blue_mean
-        model["std_blue"] = blue_std
+        model["variance_blue"] = blue_std
     return model
 
         
@@ -136,7 +133,46 @@ def BayesModel(data,truth):
     
 
 def BayesPredict(model,test_data):
-    pass
+    lbl = []
+    for sample in test_data :
+        if sample.shape[0] == 1:
+            # calculate the probability of the sample given the class 0
+            p_gray_given_0 = (1 / ((2 * np.pi * model["variance_grayscale"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_grayscale"]) ** 2) / (2 * model["variance_grayscale"]))
+            log_p_gray_given_0 = np.log(p_gray_given_0)
+            class_0_prediction = log_p_gray_given_0 + np.log(model["P(0)"])
+            # calculate the probability of the sample given the class 1
+            p_x_given_1 = (1 / ((2 * np.pi * model["variance_grayscale"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_grayscale"]) ** 2) / (2 * model["variance_grayscale"]))
+            log_p_gray_given_1 = np.log(p_x_given_1)
+            class_1_prediction = log_p_gray_given_1 + np.log(model["P(1)"])
+            # append the label to the list
+            lbl.append(0 if class_0_prediction > class_1_prediction else 1)
+        elif sample.shape[0] == 3:
+            # calculate the probability of the sample given the class 0
+            p_red_given_0 = (1 / ((2 * np.pi * model["variance_red"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_red"]) ** 2) / (2 * model["variance_red"]) )
+            log_p_red_given_0 = np.log(p_red_given_0)
+
+            p_green_given_0 = (1 / ((2 * np.pi * model["variance_green"]) ** 0.5)) * np.exp(-((sample[1] - model["mean_green"]) ** 2) / (2 * model["variance_green"]) )
+            log_p_green_given_0 = np.log(p_green_given_0)
+
+            p_blue_given_0 = (1 / ((2 * np.pi * model["variance_blue"]) ** 0.5)) * np.exp(-((sample[2] - model["mean_blue"]) ** 2) / (2 * model["variance_blue"]))
+            log_p_blue_given_0 = np.log(p_blue_given_0)
+
+            class_0_prediction = log_p_red_given_0 + log_p_green_given_0 + log_p_blue_given_0 + np.log(model["P(0)"])
+            # calculate the probability of the sample given the class 1
+            p_red_given_1 = (1 / ((2 * np.pi * model["variance_red"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_red"]) ** 2) / (2 * model["variance_red"]) )
+            log_p_red_given_1 = np.log(p_red_given_1)
+            
+            p_green_given_1 = (1 / ((2 * np.pi * model["variance_green"]) ** 0.5)) * np.exp(-((sample[1] - model["mean_green"]) ** 2) / (2 * model["variance_green"]))
+            log_p_green_given_1 = np.log(p_green_given_1)
+            
+            p_blue_given_1 = (1 / ((2 * np.pi * model["variance_blue"]) ** 0.5)) * np.exp(-((sample[2] - model["mean_blue"]) ** 2) / (2 * model["variance_blue"]))
+            log_p_blue_given_1 = np.log(p_blue_given_1)
+            
+            class_1_prediction = log_p_red_given_1 + log_p_green_given_1 + log_p_blue_given_1 + np.log(model["P(1)"])
+            
+            # append the label to the list
+            lbl.append(0 if class_0_prediction > class_1_prediction else 1)
+    return lbl
 
 def ConfMtrx(actual,predicted):
     pass
@@ -146,6 +182,6 @@ if __name__ == "__main__":
         raise ValueError("Mode should be 1,3 or 204")
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
     BM = BayesModel(x_train, y_train)
-    print(BM)
-    # lbl = BayesPredict(BM, x_test)
+    # print(BM)
+    lbl = BayesPredict(BM, x_test)
     # Mtrx = ConfMtrx(y_test, lbl)

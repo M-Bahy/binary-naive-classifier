@@ -1,10 +1,12 @@
 import os
-from random import shuffle
+from random import shuffle , choice
 from PIL import Image
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 mode = 3
+test_image = ""
 images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/{mode}_images"
 labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
 
@@ -34,6 +36,7 @@ def process_labels(label_files):
     return labels
 
 def train_test_split(images_directory, labels_directory, train_size = 0.8):
+    global test_image
     images = [f for f in os.listdir(images_directory) if os.path.isfile(os.path.join(images_directory, f))]
     labels = [f for f in os.listdir(labels_directory) if os.path.isfile(os.path.join(labels_directory, f))]
     images.sort()
@@ -45,6 +48,7 @@ def train_test_split(images_directory, labels_directory, train_size = 0.8):
     train_size = int(len(dataset) * train_size)
     x_train, y_train = images[:train_size], labels[:train_size]
     x_test, y_test = images[train_size:], labels[train_size:]
+    test_image = choice(x_test)
     return process_images(x_train), process_labels(y_train), process_images(x_test), process_labels(y_test)
 
 def count_values(array):
@@ -245,11 +249,70 @@ def ConfMtrx(actual, predicted):
     
     return confusion_matrix
 
+def visualize(model):
+    # Get original image and create ground truth
+    original_image = Image.open(os.path.join(images_directory, test_image))
+    original_array = np.array(original_image)
+    
+    # Create ground truth image (threshold at 128)
+    grayscale_image = original_image.convert('L')
+    ground_truth = np.array(grayscale_image)
+    ground_truth = np.where(ground_truth > 128, 255, 0)
+    
+    # Create prediction image
+    height, width = original_array.shape[:2]
+    prediction = np.zeros((height, width), dtype=np.uint8)
+    
+    # Process each pixel
+    for i in range(height):
+        for j in range(width):
+            if len(original_array.shape) == 3:  # RGB image
+                pixel = original_array[i, j]
+                test_pixel = np.array([[pixel[0], pixel[1], pixel[2]]])
+            else:  # Grayscale image
+                pixel = original_array[i, j]
+                test_pixel = np.array([[pixel]])
+                
+            pred = BayesPredict(model, test_pixel)
+            prediction[i, j] = 255 if pred[0] == 1 else 0
+    
+    # Create figure with three subplots
+    
+# Create figure with three subplots with red background
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
+    fig.patch.set_facecolor('red')  # Set figure background to red
+    
+    # Plot original image
+    if len(original_array.shape) == 3:
+        ax1.imshow(original_array)
+    else:
+        ax1.imshow(original_array)  # Remove cmap='gray' to show original colors
+    ax1.set_title('Original Image', color='blue')  # Set title color to blue
+    ax1.set_facecolor('red')  # Set subplot background to red
+    ax1.axis('off')
+    
+    # Plot ground truth
+    ax2.imshow(ground_truth)  # Remove cmap='gray' to show original colors
+    ax2.set_title('Ground Truth', color='blue')  # Set title color to blue
+    ax2.set_facecolor('red')  # Set subplot background to red
+    ax2.axis('off')
+    
+    # Plot prediction
+    ax3.imshow(prediction)  # Remove cmap='gray' to show original colors
+    ax3.set_title('Prediction', color='blue')  # Set title color to blue
+    ax3.set_facecolor('red')  # Set subplot background to red
+    ax3.axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == "__main__":
     if mode not in [1, 3, 204]:
         raise ValueError("Mode should be 1,3 or 204")
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
     BM = BayesModel(x_train, y_train)
-    # print(BM)
+    print(BM)
     lbl = BayesPredict(BM, x_test)
     Mtrx = ConfMtrx(y_test, lbl)
+    visualize(BM)

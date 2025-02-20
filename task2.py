@@ -82,7 +82,7 @@ def stats(values):
     
     return mean, variance
 
-def BayesModel(data,truth):
+def BayesModel(data, truth):
     model = {}
     # count the number of zeros and 255s in the truth
     truth = truth.flatten()
@@ -92,39 +92,67 @@ def BayesModel(data,truth):
     model["P(0)"] = zeros / len(truth)
     model["P(1)"] = ones / len(truth)
 
-    grayscale = []
-    red = []
-    green = []
-    blue = []
+    # Initialize lists for each class
+    grayscale_0 = []
+    grayscale_1 = []
+    red_0 = []
+    red_1 = []
+    green_0 = []
+    green_1 = []
+    blue_0 = []
+    blue_1 = []
 
     for i in range(len(data)):
         sample_point = data[i]
         point_class = truth[i]
         number_of_channels = len(sample_point)
+        
         if number_of_channels == 1:
-            grayscale.append(sample_point[0])
+            if point_class == 0:
+                grayscale_0.append(sample_point[0])
+            else:
+                grayscale_1.append(sample_point[0])
         elif number_of_channels == 3:
-            red.append(sample_point[0])
-            green.append(sample_point[1])
-            blue.append(sample_point[2])
+            if point_class == 0:
+                red_0.append(sample_point[0])
+                green_0.append(sample_point[1])
+                blue_0.append(sample_point[2])
+            else:
+                red_1.append(sample_point[0])
+                green_1.append(sample_point[1])
+                blue_1.append(sample_point[2])
+
     if number_of_channels == 1:
-        # calculate the mean and variance for grayscale samples , this is an array of n numbers
-        grayscale_mean, grayscale_std = stats(grayscale)
-        model["mean_grayscale"] = grayscale_mean
-        model["variance_grayscale"] = grayscale_std
+        # Calculate statistics for each class in grayscale
+        mean_0, var_0 = stats(grayscale_0)
+        mean_1, var_1 = stats(grayscale_1)
+        model["mean_0_grayscale"] = mean_0
+        model["variance_0_grayscale"] = var_0
+        model["mean_1_grayscale"] = mean_1
+        model["variance_1_grayscale"] = var_1
     elif number_of_channels == 3:
-        # calculate the mean and variance for red samples , this is an array of n numbers
-        red_mean, red_std = stats(red)
-        model["mean_red"] = red_mean
-        model["variance_red"] = red_std
-        # calculate the mean and variance for green samples , this is an array of n numbers
-        green_mean, green_std = stats(green)
-        model["mean_green"] = green_mean
-        model["variance_green"] = green_std
-        # calculate the mean and variance for blue samples , this is an array of n numbers
-        blue_mean, blue_std = stats(blue)
-        model["mean_blue"] = blue_mean
-        model["variance_blue"] = blue_std
+        # Calculate statistics for each class in RGB
+        red_mean_0, red_var_0 = stats(red_0)
+        red_mean_1, red_var_1 = stats(red_1)
+        model["mean_0_red"] = red_mean_0
+        model["variance_0_red"] = red_var_0
+        model["mean_1_red"] = red_mean_1
+        model["variance_1_red"] = red_var_1
+
+        green_mean_0, green_var_0 = stats(green_0)
+        green_mean_1, green_var_1 = stats(green_1)
+        model["mean_0_green"] = green_mean_0
+        model["variance_0_green"] = green_var_0
+        model["mean_1_green"] = green_mean_1
+        model["variance_1_green"] = green_var_1
+
+        blue_mean_0, blue_var_0 = stats(blue_0)
+        blue_mean_1, blue_var_1 = stats(blue_1)
+        model["mean_0_blue"] = blue_mean_0
+        model["variance_0_blue"] = blue_var_0
+        model["mean_1_blue"] = blue_mean_1
+        model["variance_1_blue"] = blue_var_1
+
     return model
 
         
@@ -132,45 +160,44 @@ def BayesModel(data,truth):
     
     
 
-def BayesPredict(model,test_data):
+def BayesPredict(model, test_data):
     lbl = []
-    for sample in test_data :
+    for sample in test_data:
         if sample.shape[0] == 1:
-            # calculate the probability of the sample given the class 0
-            p_gray_given_0 = (1 / ((2 * np.pi * model["variance_grayscale"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_grayscale"]) ** 2) / (2 * model["variance_grayscale"]))
+            # Calculate for class 0
+            p_gray_given_0 = (1 / ((2 * np.pi * model["variance_0_grayscale"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_0_grayscale"]) ** 2) / (2 * model["variance_0_grayscale"]))
             log_p_gray_given_0 = np.log(p_gray_given_0)
             class_0_prediction = log_p_gray_given_0 + np.log(model["P(0)"])
-            # calculate the probability of the sample given the class 1
-            p_x_given_1 = (1 / ((2 * np.pi * model["variance_grayscale"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_grayscale"]) ** 2) / (2 * model["variance_grayscale"]))
-            log_p_gray_given_1 = np.log(p_x_given_1)
+            
+            # Calculate for class 1
+            p_gray_given_1 = (1 / ((2 * np.pi * model["variance_1_grayscale"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_1_grayscale"]) ** 2) / (2 * model["variance_1_grayscale"]))
+            log_p_gray_given_1 = np.log(p_gray_given_1)
             class_1_prediction = log_p_gray_given_1 + np.log(model["P(1)"])
-            # append the label to the list
+            
             lbl.append(0 if class_0_prediction > class_1_prediction else 1)
         elif sample.shape[0] == 3:
-            # calculate the probability of the sample given the class 0
-            p_red_given_0 = (1 / ((2 * np.pi * model["variance_red"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_red"]) ** 2) / (2 * model["variance_red"]) )
+            # Calculate for class 0
+            p_red_given_0 = (1 / ((2 * np.pi * model["variance_0_red"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_0_red"]) ** 2) / (2 * model["variance_0_red"]))
+            p_green_given_0 = (1 / ((2 * np.pi * model["variance_0_green"]) ** 0.5)) * np.exp(-((sample[1] - model["mean_0_green"]) ** 2) / (2 * model["variance_0_green"]))
+            p_blue_given_0 = (1 / ((2 * np.pi * model["variance_0_blue"]) ** 0.5)) * np.exp(-((sample[2] - model["mean_0_blue"]) ** 2) / (2 * model["variance_0_blue"]))
+            
             log_p_red_given_0 = np.log(p_red_given_0)
-
-            p_green_given_0 = (1 / ((2 * np.pi * model["variance_green"]) ** 0.5)) * np.exp(-((sample[1] - model["mean_green"]) ** 2) / (2 * model["variance_green"]) )
             log_p_green_given_0 = np.log(p_green_given_0)
-
-            p_blue_given_0 = (1 / ((2 * np.pi * model["variance_blue"]) ** 0.5)) * np.exp(-((sample[2] - model["mean_blue"]) ** 2) / (2 * model["variance_blue"]))
             log_p_blue_given_0 = np.log(p_blue_given_0)
-
+            
             class_0_prediction = log_p_red_given_0 + log_p_green_given_0 + log_p_blue_given_0 + np.log(model["P(0)"])
-            # calculate the probability of the sample given the class 1
-            p_red_given_1 = (1 / ((2 * np.pi * model["variance_red"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_red"]) ** 2) / (2 * model["variance_red"]) )
+            
+            # Calculate for class 1
+            p_red_given_1 = (1 / ((2 * np.pi * model["variance_1_red"]) ** 0.5)) * np.exp(-((sample[0] - model["mean_1_red"]) ** 2) / (2 * model["variance_1_red"]))
+            p_green_given_1 = (1 / ((2 * np.pi * model["variance_1_green"]) ** 0.5)) * np.exp(-((sample[1] - model["mean_1_green"]) ** 2) / (2 * model["variance_1_green"]))
+            p_blue_given_1 = (1 / ((2 * np.pi * model["variance_1_blue"]) ** 0.5)) * np.exp(-((sample[2] - model["mean_1_blue"]) ** 2) / (2 * model["variance_1_blue"]))
+            
             log_p_red_given_1 = np.log(p_red_given_1)
-            
-            p_green_given_1 = (1 / ((2 * np.pi * model["variance_green"]) ** 0.5)) * np.exp(-((sample[1] - model["mean_green"]) ** 2) / (2 * model["variance_green"]))
             log_p_green_given_1 = np.log(p_green_given_1)
-            
-            p_blue_given_1 = (1 / ((2 * np.pi * model["variance_blue"]) ** 0.5)) * np.exp(-((sample[2] - model["mean_blue"]) ** 2) / (2 * model["variance_blue"]))
             log_p_blue_given_1 = np.log(p_blue_given_1)
             
             class_1_prediction = log_p_red_given_1 + log_p_green_given_1 + log_p_blue_given_1 + np.log(model["P(1)"])
             
-            # append the label to the list
             lbl.append(0 if class_0_prediction > class_1_prediction else 1)
     return lbl
 

@@ -336,7 +336,80 @@ def BayesPredict(model, test_data):
             lbl.append(0 if class_0_prediction > class_1_prediction else 1)
     return lbl
 
+def ConfMtrx_multi_spectral(actual, predicted):
+    """
+    Multi-spectral version of confusion matrix for 6-class classification
+    Args:
+        actual: Array of actual class labels (1-7, excluding 6)
+        predicted: Array of predicted class labels
+    """
+    # Get unique classes (should be 1-5,7)
+    unique_classes = sorted(list(set(actual.flatten())))
+    n_classes = len(unique_classes)
+    
+    # Initialize confusion matrix
+    confusion_matrix = np.zeros((n_classes, n_classes), dtype=int)
+    
+    # Create class mapping (e.g., {1:0, 2:1, 3:2, 4:3, 5:4, 7:5})
+    class_to_index = {cls: idx for idx, cls in enumerate(unique_classes)}
+    
+    # Fill confusion matrix
+    for i in range(len(actual)):
+        true_class = actual[i]
+        pred_class = predicted[i]
+        true_idx = class_to_index[true_class]
+        pred_idx = class_to_index[pred_class]
+        confusion_matrix[true_idx][pred_idx] += 1
+    
+    # Print confusion matrix
+    print("\nConfusion Matrix:")
+    print("-" * (8 * n_classes + 3))
+    
+    # Print header
+    print("|Actual\\Pred|", end="")
+    for cls in unique_classes:
+        print(f"   {cls:<4}|", end="")
+    print()
+    print("-" * (8 * n_classes + 3))
+    
+    # Print matrix rows
+    for i, true_class in enumerate(unique_classes):
+        print(f"|{true_class:^10}|", end="")
+        for j in range(n_classes):
+            print(f" {confusion_matrix[i][j]:<6}|", end="")
+        print()
+    print("-" * (8 * n_classes + 3))
+    
+    # Calculate metrics for each class
+    print("\nPer-class Metrics:")
+    for i, cls in enumerate(unique_classes):
+        tp = confusion_matrix[i][i]
+        fp = sum(confusion_matrix[:, i]) - tp
+        fn = sum(confusion_matrix[i, :]) - tp
+        tn = confusion_matrix.sum() - tp - fp - fn
+        
+        accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) > 0 else 0
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+        
+        print(f"\nClass {cls}:")
+        print(f"Accuracy:  {accuracy:.4f}")
+        print(f"Precision: {precision:.4f}")
+        print(f"Recall:    {recall:.4f}")
+        print(f"F1 Score:  {f1:.4f}")
+    
+    # Calculate overall accuracy
+    overall_accuracy = np.trace(confusion_matrix) / confusion_matrix.sum()
+    print(f"\nOverall Accuracy: {overall_accuracy:.4f}")
+    
+    return confusion_matrix
+
 def ConfMtrx(actual, predicted):
+    # search for the number 2 in the actual 
+    # if found then it is a multi-spectral image
+    if 2 in actual:
+        return ConfMtrx_multi_spectral(actual, predicted)
     # Initialize confusion matrix
     # [TN FP]
     # [FN TP]
@@ -462,7 +535,7 @@ if __name__ == "__main__":
         raise ValueError("Mode should be 1,3 or 36")
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
     BM = BayesModel(x_train, y_train)
-    print(BM)
+    # print(BM)
     lbl = BayesPredict(BM, x_test)
     print(len(lbl))
     Mtrx = ConfMtrx(y_test, lbl)

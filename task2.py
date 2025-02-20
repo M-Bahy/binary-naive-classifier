@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-mode = 3
+mode = 1
 test_image = ""
 images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/{mode}_images"
 labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
@@ -249,11 +249,20 @@ def ConfMtrx(actual, predicted):
     
     return confusion_matrix
 
+def is_grayscale(image_array):
+    # If 2D array, it's grayscale
+    if len(image_array.shape) == 2:
+        return True
+    # If 3D array with single channel, it's grayscale
+    elif len(image_array.shape) == 3:
+        return image_array.shape[2] == 1
+    return False
+
 def visualize(model):
     # Get original image and create ground truth
     original_image = Image.open(os.path.join(images_directory, test_image))
     original_array = np.array(original_image)
-    
+    is_gray_scale = is_grayscale(original_array)
     # Create ground truth image (threshold at 128)
     grayscale_image = original_image.convert('L')
     ground_truth = np.array(grayscale_image)
@@ -283,22 +292,28 @@ def visualize(model):
     fig.patch.set_facecolor('red')  # Set figure background to red
     
     # Plot original image
-    if len(original_array.shape) == 3:
-        ax1.imshow(original_array)
+    if is_gray_scale:
+        ax1.imshow(original_array, cmap='gray')
     else:
-        ax1.imshow(original_array)  # Remove cmap='gray' to show original colors
+        ax1.imshow(original_array)
     ax1.set_title('Original Image', color='blue')  # Set title color to blue
     ax1.set_facecolor('red')  # Set subplot background to red
     ax1.axis('off')
     
     # Plot ground truth
-    ax2.imshow(ground_truth)  # Remove cmap='gray' to show original colors
+    if is_gray_scale:
+        ax2.imshow(ground_truth, cmap='gray')
+    else:
+        ax2.imshow(ground_truth)
     ax2.set_title('Ground Truth', color='blue')  # Set title color to blue
     ax2.set_facecolor('red')  # Set subplot background to red
     ax2.axis('off')
     
     # Plot prediction
-    ax3.imshow(prediction)  # Remove cmap='gray' to show original colors
+    if is_gray_scale:
+        ax3.imshow(prediction, cmap='gray')
+    else:
+        ax3.imshow(prediction)
     ax3.set_title('Prediction', color='blue')  # Set title color to blue
     ax3.set_facecolor('red')  # Set subplot background to red
     ax3.axis('off')

@@ -62,6 +62,7 @@ def process_file(input_path):
     
     print(f"\nTotal number of lines processed: {line_count}")
     print(f"Created train/test files in: {directory}")
+    return x_train_path, y_train_path, x_test_path, y_test_path
 
 if __name__ == "__main__":
     input_file_path = "/media/bahy/MEDO BAHY/CMS/Deep Learning/naive-classifier/Dataset/bahy/36_images/dataset.txt"

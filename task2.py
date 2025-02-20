@@ -305,6 +305,8 @@ def is_grayscale(image_array):
     return False
 
 def visualize(model):
+    if test_image == "":
+        return
     # Get original image and create ground truth
     original_image = Image.open(os.path.join(images_directory, test_image))
     original_array = np.array(original_image)

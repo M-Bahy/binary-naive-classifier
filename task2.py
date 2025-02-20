@@ -323,8 +323,8 @@ def visualize(model):
 
 
 if __name__ == "__main__":
-    if mode not in [1, 3, 204]:
-        raise ValueError("Mode should be 1,3 or 204")
+    if mode not in [1, 3, 36]:
+        raise ValueError("Mode should be 1,3 or 36")
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
     BM = BayesModel(x_train, y_train)
     print(BM)

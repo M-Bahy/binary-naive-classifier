@@ -7,8 +7,25 @@ import matplotlib.pyplot as plt
 
 mode = 1
 test_image = ""
-images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/{mode}_images"
-labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
+rgb_images = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/3_images"
+grayscale_images = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/1_images"
+rgb_labels = grayscale_labels = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
+multi_spectral_images = "/media/bahy/MEDO BAHY/CMS/Deep Learning/naive-classifier/Dataset/subset/36_images"
+multi_spectral_labels = "/media/bahy/MEDO BAHY/CMS/Deep Learning/naive-classifier/Dataset/subset/36_labels"
+
+image_paths = {
+    1: grayscale_images,
+    3: rgb_images,
+    36: multi_spectral_images
+}
+images_directory = image_paths[mode]
+
+label_paths = {
+    1: grayscale_labels,
+    3: rgb_labels,
+    36: multi_spectral_labels
+}
+labels_directory = label_paths[mode]
 
 
 def process_images(image_files):
@@ -35,10 +52,39 @@ def process_labels(label_files):
     labels = np.where(labels == 255, 1, labels)
     return labels
 
+def text_to_datapoint(file_path):
+    """
+    Read numbers from a text file and convert them to arrays
+    Args:
+        file_path: Path to text file containing space-separated numbers
+    Returns:
+        List where each element is either a single integer or an array of integers
+    """
+    datapoints = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            # Split line into numbers and convert to int
+            numbers = [int(x) for x in line.strip().split()]
+            
+            # If only one number in line, append the number
+            # Otherwise append the array of numbers
+            if len(numbers) == 1:
+                datapoints.append(numbers[0])
+            else:
+                datapoints.append(numbers)
+    
+    return np.array(datapoints)
+
 def train_test_split(images_directory, labels_directory, train_size = 0.8):
     global test_image
     images = [f for f in os.listdir(images_directory) if os.path.isfile(os.path.join(images_directory, f))]
     labels = [f for f in os.listdir(labels_directory) if os.path.isfile(os.path.join(labels_directory, f))]
+    if len(images) == 2 and len(labels) == 2:
+        x_train = os.path.join(images_directory, "x_train.txt")
+        y_train = os.path.join(labels_directory, "y_train.txt")
+        x_test = os.path.join(images_directory, "x_test.txt")
+        y_test = os.path.join(labels_directory, "y_test.txt")
+        return text_to_datapoint(x_train), text_to_datapoint(y_train), text_to_datapoint(x_test), text_to_datapoint(y_test)
     images.sort()
     labels.sort()
     dataset = zip(images, labels)

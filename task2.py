@@ -257,8 +257,46 @@ def BayesModel(data, truth):
 
     return model
 
+def BP_multi_spectral(model, test_data):
+    lbl = []
+    for sample in test_data:
+        class_scores = {}
+        
+        # Calculate score for each class (1-7, excluding 6)
+        for cls in range(1, 8):
+            if cls == 6:  # Skip class 6
+                continue
+            
+            # Start with log of prior probability
+            score = np.log(model[f"P({cls})"])
+            
+            # Add log-likelihood for each channel
+            for channel in range(36):
+                mean = model[f"mean_{cls}_channel_{channel}"]
+                variance = model[f"variance_{cls}_channel_{channel}"]
+                
+                # Calculate gaussian probability
+                p_channel = (1 / ((2 * np.pi * variance) ** 0.5)) * \
+                          np.exp(-((sample[channel] - mean) ** 2) / (2 * variance))
+                
+                # Add log probability
+                if p_channel > 0:
+                    score += np.log(p_channel)
+                else:
+                    score = float('-inf')  # Handle zero probabilities
+            
+            class_scores[cls] = score
+        
+        # Choose class with highest score
+        predicted_class = max(class_scores.items(), key=lambda x: x[1])[0]
+        lbl.append(predicted_class)
+    
+    return lbl
+
 def BayesPredict(model, test_data):
     lbl = []
+    if (len(test_data[0]) == 36):   
+        return BP_multi_spectral(model, test_data)
     for sample in test_data:
         if sample.shape[0] == 1:
             # Calculate for class 0
@@ -425,6 +463,7 @@ if __name__ == "__main__":
     x_train, y_train, x_test, y_test = train_test_split(images_directory, labels_directory)
     BM = BayesModel(x_train, y_train)
     print(BM)
-    # lbl = BayesPredict(BM, x_test)
-    # Mtrx = ConfMtrx(y_test, lbl)
-    # visualize(BM)
+    lbl = BayesPredict(BM, x_test)
+    print(len(lbl))
+    Mtrx = ConfMtrx(y_test, lbl)
+    visualize(BM)

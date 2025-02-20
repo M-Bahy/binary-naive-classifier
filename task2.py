@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 
-mode = 1
+mode = 3
 images_directory = f"/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/{mode}_images"
 labels_directory = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
 
@@ -202,7 +202,9 @@ def BayesPredict(model, test_data):
     return lbl
 
 def ConfMtrx(actual,predicted):
-    pass
+    print("Confusion Matrix")
+    # print the length of the actual and predicted values
+    print(len(actual), len(predicted))
 
 if __name__ == "__main__":
     if mode not in [1, 3, 204]:
@@ -211,4 +213,4 @@ if __name__ == "__main__":
     BM = BayesModel(x_train, y_train)
     # print(BM)
     lbl = BayesPredict(BM, x_test)
-    # Mtrx = ConfMtrx(y_test, lbl)
+    Mtrx = ConfMtrx(y_test, lbl)

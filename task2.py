@@ -6,7 +6,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 
 
-mode = 36
+mode = 3
 test_image = ""
 rgb_images = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/3_images"
 grayscale_images = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/1_images"
@@ -565,19 +565,21 @@ def visualize(model):
     ax1.axis('off')
     
     # Plot ground truth
-    if is_gray_scale:
-        ax2.imshow(ground_truth, cmap='gray')
-    else:
-        ax2.imshow(ground_truth)
+    # if is_gray_scale:
+    #     ax2.imshow(ground_truth, cmap='gray')
+    # else:
+        # ax2.imshow(ground_truth)
+    ax2.imshow(ground_truth, cmap='gray')
     ax2.set_title('Ground Truth', color='blue')  # Set title color to blue
     ax2.set_facecolor('red')  # Set subplot background to red
     ax2.axis('off')
     
     # Plot prediction
-    if is_gray_scale:
-        ax3.imshow(prediction, cmap='gray')
-    else:
-        ax3.imshow(prediction)
+    # if is_gray_scale:
+    #     ax3.imshow(prediction, cmap='gray')
+    # else:
+        # ax3.imshow(prediction)
+    ax3.imshow(prediction, cmap='gray')
     ax3.set_title('Prediction', color='blue')  # Set title color to blue
     ax3.set_facecolor('red')  # Set subplot background to red
     ax3.axis('off')

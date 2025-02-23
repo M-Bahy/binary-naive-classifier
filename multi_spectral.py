@@ -4,6 +4,7 @@ import random
 
 # Total number of datapoints: 6435
 # Unique labels: {'1': 1533, '2': 703, '3': 1358, '4': 626, '5': 707, '7': 1508}
+# 20% of each would be 307, 141, 271, 125, 141, 302 respectively
 # test would be 1287 so an entire class could end up in the test set 
 # unlike task2.py where we deal with images and we split whole images into train and test sets
 

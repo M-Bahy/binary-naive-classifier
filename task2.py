@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 
 mode = 3
 test_image = ""
-rgb_images = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/3_images"
-grayscale_images = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/1_images"
-rgb_labels = grayscale_labels = "/home/bahy/Desktop/CMS/Deep Learning/naive-classifier/Dataset/subset/labels"
-multi_spectral_images = "/media/bahy/MEDO BAHY/CMS/Deep Learning/naive-classifier/Dataset/subset/36_data/dataset.txt"
+rgb_images = "/home/bahy/Desktop/CMS/Deep Learning/Assignment 1/naive-classifier/Dataset/subset/3_images"
+grayscale_images = "/home/bahy/Desktop/CMS/Deep Learning/Assignment 1/naive-classifier/Dataset/subset/1_images"
+rgb_labels = grayscale_labels = "/home/bahy/Desktop/CMS/Deep Learning/Assignment 1/naive-classifier/Dataset/subset/labels"
+multi_spectral_images = "/media/bahy/MEDO BAHY/CMS/Deep Learning/Assignment 1/naive-classifier/Dataset/subset/36_data/dataset.txt"
 multi_spectral_labels = ""
 
 image_paths = {

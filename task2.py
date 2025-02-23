@@ -6,7 +6,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 
 
-mode = 3
+mode = 36
 test_image = ""
 rgb_images = "/home/bahy/Desktop/CMS/Deep Learning/Assignment 1/naive-classifier/Dataset/subset/3_images"
 grayscale_images = "/home/bahy/Desktop/CMS/Deep Learning/Assignment 1/naive-classifier/Dataset/subset/1_images"

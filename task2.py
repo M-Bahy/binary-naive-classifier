@@ -392,6 +392,58 @@ def BayesPredict(model, test_data):
             lbl.append(0 if class_0_prediction > class_1_prediction else 1)
     return lbl
 
+def viz_multi_spectral(actual, predicted):
+    # First 1260 elements for visualization (35x36)
+    # vis_actual = actual[:1260].reshape(35, 36)
+    # vis_predicted = predicted[:1260].reshape(35, 36)
+    actual = np.array(actual[:1260])
+    predicted = np.array(predicted[:1260])
+    vis_actual = actual.reshape(35, 36)
+    vis_predicted = predicted.reshape(35, 36)
+    
+    # Create color map for classes (1-5,7)
+    colors = {
+        1: [1, 0, 0],     # Red
+        2: [0, 1, 0],     # Green
+        3: [0, 0, 1],     # Blue
+        4: [1, 1, 0],     # Yellow
+        5: [1, 0, 1],     # Magenta
+        7: [0, 1, 1]      # Cyan
+    }
+    
+    # Create RGB images for actual and predicted
+    actual_img = np.zeros((35, 36, 3))
+    predicted_img = np.zeros((35, 36, 3))
+    
+    # Fill images with colors based on class labels
+    for i in range(35):
+        for j in range(36):
+            actual_img[i, j] = colors[vis_actual[i, j]]
+            predicted_img[i, j] = colors[vis_predicted[i, j]]
+    
+    # Create visualization
+    plt.figure(figsize=(12, 5))
+    
+    # Plot actual labels
+    plt.subplot(121)
+    plt.imshow(actual_img)
+    plt.title('Actual Labels')
+    plt.axis('off')
+    
+    # Plot predicted labels
+    plt.subplot(122)
+    plt.imshow(predicted_img)
+    plt.title('Predicted Labels')
+    plt.axis('off')
+    
+    # Add colorbar legend
+    legend_elements = [plt.Rectangle((0,0),1,1, fc=colors[cls]) for cls in sorted(colors.keys())]
+    plt.figlegend(legend_elements, [f'Class {cls}' for cls in sorted(colors.keys())],
+                  loc='center right', bbox_to_anchor=(1.2, 0.5))
+    
+    plt.tight_layout()
+    plt.show()
+
 def ConfMtrx_multi_spectral(actual, predicted):
     """
     Multi-spectral version of confusion matrix for 6-class classification
@@ -458,7 +510,7 @@ def ConfMtrx_multi_spectral(actual, predicted):
     # Calculate overall accuracy
     overall_accuracy = np.trace(confusion_matrix) / confusion_matrix.sum()
     print(f"\nOverall Accuracy: {overall_accuracy:.4f}")
-    
+    viz_multi_spectral(actual, predicted)
     return confusion_matrix
 
 def ConfMtrx(actual, predicted):
